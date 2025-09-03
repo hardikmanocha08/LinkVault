@@ -11,6 +11,14 @@ interface CardProps {
 }
 
 export function Card({ _id, title, link, type, onDelete }: CardProps) {
+  // Load Twitter widgets.js for embed
+  if (type === "twitter") {
+    setTimeout(() => {
+      if (window && (window as any).twttr && (window as any).twttr.widgets) {
+        (window as any).twttr.widgets.load();
+      }
+    }, 0);
+  }
 
   const handleDelete = async () => {
     try {
