@@ -50,18 +50,17 @@ export function SharePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+    <div className="min-h-screen bg-gray-100 p-2 sm:p-4">
+      <div className="max-w-2xl sm:max-w-6xl mx-auto">
+        <div className="mb-8 px-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
             {shareData.username}'s Brain
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-sm sm:text-base">
             Shared content from {shareData.username}
           </p>
         </div>
-        
-        <div className="flex gap-4 flex-wrap">
+        <div className="flex gap-3 sm:gap-4 flex-wrap justify-center">
           {shareData.content && shareData.content.length > 0 ? (
             shareData.content.map(({ _id, type, link, title }) => (
               <Card 

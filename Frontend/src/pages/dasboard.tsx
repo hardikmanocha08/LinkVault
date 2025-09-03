@@ -13,14 +13,44 @@ import { ShareIcon } from '../icons/shareIcon'
 // import { Signup } from './components/Signup'
 
 function Dashboard() {
+const [sidebarOpen, setSidebarOpen] = useState(false);
 
 const [modalOpen, setModalOpen] = useState(false);
 const [filterType, setFilterType] = useState<string | null>(null);
 const { contents, refetch } = useContent();
   return (
-    <div className='min-h-screen w-full bg-gradient-to-br from-indigo-100 via-white to-purple-100'>
-      <Sidebar onFilter={setFilterType}></Sidebar>
-      <div className='p-6 md:p-8 ml-72'>
+    <div className='min-h-screen w-full bg-gradient-to-br from-indigo-100 via-white to-purple-100 flex flex-col md:flex-row relative'>
+      {/* Mobile sidebar toggle button */}
+      <button
+        className="md:hidden fixed top-4 left-4 z-30 bg-white/80 border border-gray-300 rounded-full p-2 shadow"
+        onClick={() => setSidebarOpen(true)}
+        aria-label="Open sidebar"
+      >
+        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      {/* Sidebar and overlay for mobile */}
+      {sidebarOpen && (
+        <>
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 z-40 bg-black/30 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+          {/* Sidebar */}
+          <div
+            className="fixed top-0 left-0 z-50 w-72 h-full bg-white/70 backdrop-blur-xl border-r border-gray-200 md:hidden transition-transform duration-300"
+            onClick={e => e.stopPropagation()}
+            style={{ minWidth: '18rem' }}
+          >
+            <Sidebar onFilter={type => { setFilterType(type); setSidebarOpen(false); }} />
+          </div>
+        </>
+      )}
+      {/* Desktop sidebar */}
+      <div className="hidden md:block md:w-72 md:fixed md:left-0 md:top-0 h-full">
+        <Sidebar onFilter={setFilterType} />
+      </div>
+      <div className='p-4 sm:p-6 md:p-8 md:ml-72 w-full'>
       <CreateContentModal open={modalOpen} onClose={() => {
         setModalOpen(false);
       }} onContentAdded={refetch}/>
@@ -61,7 +91,7 @@ const { contents, refetch } = useContent();
     text="Share brain"/>
       </div>
     
-    <div className='flex gap-5 flex-wrap '>
+  <div className='flex gap-4 flex-wrap justify-center'>
       {contents
         .filter(({ type }) => !filterType || type === filterType)
         .map(({ _id, type, link, title }) => (

@@ -55,10 +55,10 @@ export function Signup(){
             setIsLoading(false);
         }
     }
-    return <div className="min-h-screen w-full bg-gradient-to-br from-indigo-100 via-white to-purple-100 flex justify-center items-center p-4">
-        <div className="w-full max-w-md rounded-2xl border border-white/60 bg-white/70 backdrop-blur-xl shadow-xl shadow-indigo-100 p-8 md:p-10">
+    return <div className="min-h-screen w-full bg-gradient-to-br from-indigo-100 via-white to-purple-100 flex justify-center items-center p-2 sm:p-4">
+        <div className="w-full max-w-xs sm:max-w-md rounded-2xl border border-white/60 bg-white/70 backdrop-blur-xl shadow-xl shadow-indigo-100 p-6 sm:p-8 md:p-10">
             <div className="mb-6 text-center">
-                <h1 className="text-3xl md:text-4xl font-semibold text-gray-900">LinkVault</h1>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-900">LinkVault</h1>
             </div>
             <div className={errors.username ? "mb-4" : "mb-3"}>
                 <Input 
