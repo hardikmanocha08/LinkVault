@@ -33,39 +33,36 @@ export function CreateContentModal({open,onClose,onContentAdded}){
     }
     return <div>
         {open &&  <div>
-            <div className="w-screen h-screen bg-black fixed top-0 left-0 opacity-30 flex justify-center z-40">
-            </div>
-            <div className="w-screen h-screen fixed left-0 top-0 flex justify-center z-50">
-                <div className=" flex flex-col justify-center">
-                <span className="bg-white/80 backdrop-blur-xl fixed p-6 rounded-xl border border-white/60 shadow-lg ">
+            <div className="w-screen h-screen bg-black fixed top-0 left-0 opacity-30 z-40"></div>
+            <div className="w-screen h-screen fixed left-0 top-0 flex items-center justify-center z-50">
+                <div className="flex flex-col justify-center items-center w-full">
+                    <span className="bg-white/80 backdrop-blur-xl p-4 sm:p-6 rounded-xl border border-white/60 shadow-lg w-[90vw] max-w-xs sm:max-w-md">
                         <div className="flex justify-end">
                             <button onClick={onClose} className="cursor-pointer" aria-label="Close modal">
                                 <CrossIcon/>
                             </button>
-                            
-                        </div>  
+                        </div>
                         <div className="space-y-2">
                             <Input reference={titleRef} placeholder={"Title"}/>
                             <Input reference={linkRef} placeholder={"Link"}/>
-                        </div>  
+                        </div>
                         <div className="pt-2">
                             <h1 className="text-sm font-medium text-gray-700">Type</h1>
-                            <div className="flex gap-2 p-3 justify-center pb-2">
-                            <Button text="Youtube" variant={type ===ContentType.Youtube ? "primary":"secondary"} onClick={()=>{
-                                setType(ContentType.Youtube)
-                            }}></Button>
-                            <Button text="Twitter" variant={type ===ContentType.Twitter ? "primary":"secondary"} onClick={()=>{
-                                setType(ContentType.Twitter)
-                            }}></Button>
+                            <div className="flex gap-2 p-2 justify-center pb-2">
+                                <Button text="Youtube" variant={type ===ContentType.Youtube ? "primary":"secondary"} onClick={()=>{
+                                    setType(ContentType.Youtube)
+                                }}></Button>
+                                <Button text="Twitter" variant={type ===ContentType.Twitter ? "primary":"secondary"} onClick={()=>{
+                                    setType(ContentType.Twitter)
+                                }}></Button>
                             </div>
                         </div>
-                        <div className="flex justify-center pt-1">  
-                        <Button onClick={addContent} variant="primary" text="Submit"></Button>
-                        </div>                   
+                        <div className="flex justify-center pt-1">
+                            <Button onClick={addContent} variant="primary" text="Submit"></Button>
+                        </div>
                     </span>
-                    </div>
+                </div>
             </div>
-            </div>}
-
+        </div>}
     </div>
 }
