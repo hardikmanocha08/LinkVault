@@ -1,8 +1,17 @@
 import { useEffect, useRef, useState } from "react";
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
+
+interface Card {
+  _id: string;
+  title: string;
+  link: string;
+  type: string;
+  description?: string;
+}
+
 export function Chatbot({ contents }: { contents: any[] }) {
   const [messages, setMessages] = useState<{ sender: string; text: string }[]>([]);
   const [input, setInput] = useState("");
-  const apiKey = process.env.VITE_GEMINI_API_KEY || "";
   const [loading, setLoading] = useState(false);
   const [minimized, setMinimized] = useState(true);
   const chatbotRef = useRef<HTMLDivElement>(null);
@@ -55,7 +64,7 @@ export function Chatbot({ contents }: { contents: any[] }) {
     }
   }
 
-  async function enrichCards(cards: any[]): Promise<any[]> {
+  async function enrichCards(cards: Card[]): Promise<Card[]> {
     // For each card, fetch description if missing
     return Promise.all(cards.map(async card => {
       if (card.type === "youtube" && !card.description) {
@@ -98,7 +107,7 @@ export function Chatbot({ contents }: { contents: any[] }) {
         return data.candidates[0].content.parts[0].text;
       }
       return "No response from Gemini API.";
-    } catch (err) {
+    } catch {
       setLoading(false);
       return "Error contacting Gemini API.";
     }

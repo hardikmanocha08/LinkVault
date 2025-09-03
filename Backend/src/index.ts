@@ -1,5 +1,5 @@
-import 'dotenv/config';
 import cors from "cors";
+import 'dotenv/config';
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
