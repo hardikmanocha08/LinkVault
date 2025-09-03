@@ -125,33 +125,32 @@ export function Chatbot({ contents }: { contents: any[] }) {
   setInput("");
   }
   return minimized ? (
-  <div className="fixed bottom-6 right-6 w-16 h-16 bg-indigo-500 rounded-full shadow-lg flex items-center justify-center cursor-pointer z-50" onClick={() => setMinimized(false)}>
-  <span className="text-white font-bold">💬</span>
-  </div>
+    <div className="fixed bottom-4 right-4 w-12 h-12 sm:w-16 sm:h-16 bg-indigo-500 rounded-full shadow-lg flex items-center justify-center cursor-pointer z-50" onClick={() => setMinimized(false)}>
+      <span className="text-white font-bold text-lg sm:text-xl">💬</span>
+    </div>
   ) : (
-  <div ref={chatbotRef} className="fixed bottom-6 right-6 w-96 bg-white/90 rounded-xl shadow-lg border p-4 z-50">
-  <div className="font-bold mb-2">Chatbot (Powered by Gemini API)</div>
-  <div className="mb-2">
-  </div>
-  <div className="h-48 overflow-y-auto mb-2 bg-gray-50 rounded p-2">
-  {messages.map((msg, i) => (
+    <div ref={chatbotRef} className="fixed bottom-4 right-4 w-64 sm:w-96 bg-white/90 rounded-xl shadow-lg border p-2 sm:p-4 z-50">
+      <div className="font-bold mb-2 text-sm sm:text-base">Chatbot (Powered by Gemini API)</div>
+      <div className="mb-2"></div>
+      <div className="h-32 sm:h-48 overflow-y-auto mb-2 bg-gray-50 rounded p-2">
+        {messages.map((msg, i) => (
           <div key={i} className={msg.sender === "user" ? "text-right" : "text-left text-indigo-700"}>
-            <span className="block mb-1"><b>{msg.sender === "user" ? "You" : "Bot"}:</b> {msg.text}</span>
+            <span className="block mb-1 text-xs sm:text-sm"><b>{msg.sender === "user" ? "You" : "Bot"}:</b> {msg.text}</span>
           </div>
-  ))}
-  {loading && <div className="text-center text-gray-400">Thinking...</div>}
-  </div>
-  <div className="flex gap-2">
-  <input
-          className="flex-1 border rounded px-2 py-1"
+        ))}
+        {loading && <div className="text-center text-gray-400">Thinking...</div>}
+      </div>
+      <div className="flex gap-2">
+        <input
+          className="flex-1 border rounded px-2 py-1 text-xs sm:text-sm"
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder="Ask about your interest, card details, or recommendations..."
           onKeyDown={e => { if (e.key === "Enter") handleSend(); }}
-  />
-  <button className="bg-indigo-500 text-white px-3 py-1 rounded" onClick={handleSend} disabled={loading}>Send</button>
-  </div>
-  </div>
+        />
+        <button className="bg-indigo-500 text-white px-2 sm:px-3 py-1 rounded text-xs sm:text-sm" onClick={handleSend} disabled={loading}>Send</button>
+      </div>
+    </div>
   );
 }
 
