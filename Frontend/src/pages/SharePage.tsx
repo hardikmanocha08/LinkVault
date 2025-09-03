@@ -62,13 +62,14 @@ export function SharePage() {
         </div>
         <div className="flex gap-3 sm:gap-4 flex-wrap justify-center">
           {shareData.content && shareData.content.length > 0 ? (
-            shareData.content.map(({ _id, type, link, title }) => (
+            shareData.content.map(({ _id, type, link, title }, idx) => (
               <Card 
                 key={_id} 
                 _id={_id} 
                 title={title} 
                 type={type} 
                 link={link}
+                cardNumber={idx}
                 // No onDelete callback for shared content
               />
             ))

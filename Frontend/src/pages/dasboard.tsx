@@ -94,8 +94,8 @@ const { contents, refetch } = useContent();
   <div className='flex gap-4 flex-wrap justify-center'>
       {contents
         .filter(({ type }) => !filterType || type === filterType)
-        .map(({ _id, type, link, title }) => (
-          <Card key={_id} _id={_id} title={title} type={type} link={link} onDelete={refetch} />
+        .map(({ _id, type, link, title }, idx) => (
+          <Card key={_id} _id={_id} title={title} type={type} link={link} onDelete={refetch} cardNumber={idx} />
         ))}
     </div>
       <Chatbot contents={contents} />
