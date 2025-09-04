@@ -12,6 +12,18 @@ interface CardProps {
 }
 
 export function Card({ _id, title, link, type, onDelete, cardNumber }: CardProps) {
+  // Helper to get YouTube embed URL from any link format
+  function getYoutubeEmbedUrl(url: string) {
+    // Match standard and short YouTube URLs
+    const standardMatch = url.match(/[?&]v=([^&#]+)/);
+    const shortMatch = url.match(/youtu\.be\/([^?&#]+)/);
+    const videoId = standardMatch ? standardMatch[1] : (shortMatch ? shortMatch[1] : null);
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+    // Fallback to old logic
+    return url.replace("watch", "embed").replace("?v=", "/");
+  }
   // Load Twitter widgets.js for embed
   if (type === "twitter") {
     setTimeout(() => {
@@ -56,7 +68,7 @@ export function Card({ _id, title, link, type, onDelete, cardNumber }: CardProps
           {type === "youtube" && (
             <iframe
               className="w-full"
-              src={link.replace("watch", "embed").replace("?v=", "/")}
+              src={getYoutubeEmbedUrl(link)}
               title="YouTube video player"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               referrerPolicy="strict-origin-when-cross-origin"
