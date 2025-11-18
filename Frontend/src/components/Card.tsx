@@ -1,8 +1,6 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config";
 import { DeleteIcon } from "../icons/DeleteIcon";
-import { useState } from "react"; // Import useState
-
 interface CardProps {
   readonly _id: string; // added so we can delete by ID
   readonly title: string;
@@ -10,20 +8,9 @@ interface CardProps {
   readonly type: "twitter" | "youtube";
   readonly onDelete?: () => void; // callback to refetch or update UI
   readonly cardNumber?: number; // card number
-  readonly initialDescription?: string; // Optional initial description
 }
 
-export function Card({ _id, title, link, type, onDelete, cardNumber, initialDescription }: CardProps) {
-  const [generatedDescription, setGeneratedDescription] = useState<string | undefined>(initialDescription);
-
-  const handleGenerateDescription = async () => {
-    // Placeholder for AI description generation logic
-    // In a real application, this would involve calling an AI API
-    console.log(`Generating description for topic: ${title}`);
-    // Simulate an API call
-    const simulatedDescription = `This card is about "${title}". It is a ${type} link.`;
-    setGeneratedDescription(simulatedDescription);
-  };
+export function Card({ _id, title, link, type, onDelete, cardNumber }: CardProps) {
   // Helper to get YouTube embed URL from any link format
   function getYoutubeEmbedUrl(url: string) {
     // Match standard and short YouTube URLs
@@ -70,23 +57,11 @@ export function Card({ _id, title, link, type, onDelete, cardNumber, initialDesc
             {title}
           </div>
           <div className="flex items-center">
-            <button
-              className="text-xs font-bold bg-blue-100 text-blue-700 rounded-full px-2 py-1 mr-2 hover:bg-blue-200 transition-colors"
-              onClick={handleGenerateDescription}
-            >
-              Generate Description
-            </button>
             <div className="pr-2 text-gray-500 hover:text-red-500 cursor-pointer transition-colors">
               <button className="cursor-pointer" onClick={handleDelete}><DeleteIcon/></button>
             </div>
           </div>
         </div>
-
-        {generatedDescription && (
-          <div className="pt-2 text-sm text-gray-700">
-            {generatedDescription}
-          </div>
-        )}
 
         <div className="pt-3">
           {type === "youtube" && (
