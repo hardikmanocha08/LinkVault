@@ -6,7 +6,6 @@ interface Card {
   title: string;
   link: string;
   type: string;
-  description?: string;
 }
 
 export function Chatbot({ contents }: { contents: Card[] }) {
@@ -32,103 +31,17 @@ export function Chatbot({ contents }: { contents: Card[] }) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
-  async function fetchYouTubeDescription(link: string): Promise<string> {
-    // Extract video ID from link
-    const match = link.match(/[?&]v=([^&#]+)/);
-    const videoId = match ? match[1] : null;
-    if (!videoId) {
-      console.error("YouTube: Could not extract video ID from link:", link);
-      return "";
-    }
-    try {
-      // Use noembed for more info
-      const res = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`);
-      if (!res.ok) {
-        console.error(`YouTube: noembed.com returned ${res.status} for video ID: ${videoId}`);
-        return "";
-      }
-      const data = await res.json();
-      // Prefer description, fallback to title
-      return data.description ? data.description : (data.title ? `Title: ${data.title}` : "");
-    } catch (error) {
-      console.error("YouTube: Error fetching description for video ID:", videoId, error);
-      return "";
-    }
-  }
-
-  async function fetchTweetText(link: string): Promise<string> {
-    // Try to extract tweet ID from link
-    const match = link.match(/twitter.com\/(?:#!\/)?\w+\/status\/(\d+)/);
-    const tweetId = match ? match[1] : null;
-    if (!tweetId) {
-      console.error("Twitter: Could not extract tweet ID from link:", link);
-      return "";
-    }
-    try {
-      // Use Twitter oEmbed for public tweets
-      const res = await fetch(`https://publish.twitter.com/oembed?url=https://twitter.com/user/status/${tweetId}`);
-      if (!res.ok) {
-        console.error(`Twitter: oEmbed returned ${res.status} for tweet ID: ${tweetId}`);
-        return "";
-      }
-      const data = await res.json();
-      // Extract text from HTML robustly
-      const html = data.html || "";
-      // Remove all HTML tags
-      const text = html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
-      return text || "";
-    } catch (error) {
-      console.error("Twitter: Error fetching tweet text for tweet ID:", tweetId, error);
-      return "";
-    }
-  }
-
-  async function enrichCards(cards: Card[]): Promise<Card[]> {
-    return Promise.all(cards.map(async card => {
-      let currentCard = { ...card };
-
-      if (currentCard.type === "youtube" && !currentCard.description) {
-        const desc = await fetchYouTubeDescription(currentCard.link);
-        if (desc) { // Only update if a description was actually fetched
-          currentCard = { ...currentCard, description: desc };
-        }
-      } else if (currentCard.type === "twitter" && !currentCard.description) {
-        const desc = await fetchTweetText(currentCard.link);
-        if (desc) { // Only update if a description was actually fetched
-          currentCard = { ...currentCard, description: desc };
-        }
-      }
-
-      // Fallback: if description is still missing, use the title
-      if (!currentCard.description && currentCard.title) {
-        currentCard = { ...currentCard, description: `Title: ${currentCard.title}` };
-      }
-      
-      return currentCard;
-    }));
-  }
 
   async function getGeminiResponse(question: string) {
     setLoading(true);
     try {
-      const enriched = await enrichCards(contents);
         // Build a clean, human-readable numbered list for the model to reference.
-        const cardsText = (enriched || []).map((c, idx) => {
+        const cardsText = (contents || []).map((c, idx) => {
           const num = idx + 1;
           const id = c._id ?? "N/A";
           const title = c.title ?? "(no title)";
-          let description = c.description ? c.description.replace(/\s+/g, " ").trim() : "";
-          
-          // If description is still empty after enrichment, use title as fallback
-          if (!description && title !== "(no title)") {
-            description = `Title: ${title}`;
-          } else if (!description) {
-            // If both description and title are empty, explicitly state no description
-            description = "(no description)";
-          }
-
           const link = c.link ?? "(no link)";
-          return `${num}. CardNumber: ${num} | ID: ${id} | Title: ${title} | Description: ${description} | Link: ${link}`;
+          return `${num}. CardNumber: ${num} | ID: ${id} | Title: ${title} | Link: ${link}`;
         }).join("\n");
 
         const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent", {
@@ -142,7 +55,7 @@ export function Chatbot({ contents }: { contents: Card[] }) {
             {
               parts: [
                 {
-                    text: `System: You are LinkVault's assistant. Do not disclose any private credentials or backend-only tokens. When answering, use ONLY the card data provided below. Provide concise, factual answers referencing card numbers when appropriate. For each card include: CardNumber, Title, Description, and the Link. If the user asks about a specific card, refer to it by its CardNumber. Do NOT invent additional cards or data.\n\nMy cards:\n${cardsText}\n\nUser: ${question}`
+                    text: `System: You are LinkVault's assistant. Do not disclose any private credentials or backend-only tokens. When answering, use ONLY the card data provided below. Provide concise, factual answers referencing card numbers when appropriate. For each card include: CardNumber, Title, and the Link. If the user asks about a specific card, refer to it by its CardNumber. Do NOT invent additional cards or data.\n\nMy cards:\n${cardsText}\n\nUser: ${question}`
                 }
               ]
             }
