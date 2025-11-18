@@ -115,11 +115,20 @@ export function Chatbot({ contents }: { contents: Card[] }) {
         // Build a clean, human-readable numbered list for the model to reference.
         const cardsText = (enriched || []).map((c, idx) => {
           const num = idx + 1;
-          const id = (c as Card)._id ?? "N/A";
-          const title = (c as Card).title ?? "(no title)";
-          const desc = (c as Card).description ? ((c as Card).description as string).replace(/\s+/g, " ").trim() : "(no description)";
-          const link = (c as Card).link ?? "(no link)";
-          return `${num}. CardNumber: ${num} | ID: ${id} | Title: ${title} | Description: ${desc} | Link: ${link}`;
+          const id = c._id ?? "N/A";
+          const title = c.title ?? "(no title)";
+          let description = c.description ? c.description.replace(/\s+/g, " ").trim() : "";
+          
+          // If description is still empty after enrichment, use title as fallback
+          if (!description && title !== "(no title)") {
+            description = `Title: ${title}`;
+          } else if (!description) {
+            // If both description and title are empty, explicitly state no description
+            description = "(no description)";
+          }
+
+          const link = c.link ?? "(no link)";
+          return `${num}. CardNumber: ${num} | ID: ${id} | Title: ${title} | Description: ${description} | Link: ${link}`;
         }).join("\n");
 
         const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent", {
