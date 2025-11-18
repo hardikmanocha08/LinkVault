@@ -63,6 +63,16 @@ app.post('/api/v1/content',userMiddleware,async (req,res)=>{
         })
     }
 })
+// Get current user's share status (whether a public link exists)
+app.get('/api/v1/brain/share', userMiddleware, async (req, res) => {
+    //@ts-ignore
+    const userId = req.id;
+    const link = await LinkModel.findOne({ userId });
+    if (!link) {
+        return res.json({ shared: false });
+    }
+    return res.json({ shared: true, hash: link.hash });
+});
 app.get('/api/v1/content',userMiddleware,async(req,res)=>{
             //@ts-ignore
     const userId=req.id;

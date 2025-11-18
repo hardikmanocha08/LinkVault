@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import '../App.css'
 import { Button } from '../components/button'
 import { Card } from '../components/Card'
@@ -10,7 +10,6 @@ import { useToast } from '../components/Toast'
 import { BACKEND_URL } from '../config'
 import { useContent } from '../hoooks/useContent'
 import { PlusIcon } from '../icons/plusIcon'
-import { ShareIcon } from '../icons/shareIcon'
 // import { Signup } from './components/Signup'
 
 function Dashboard() {
@@ -21,6 +20,21 @@ const toast = useToast();
 const [modalOpen, setModalOpen] = useState(false);
 const [filterType, setFilterType] = useState<string | null>(null);
 const { contents, refetch } = useContent();
+const [isShared, setIsShared] = useState<boolean>(false);
+const [shareHash, setShareHash] = useState<string | null>(null);
+
+useEffect(() => {
+  const fetchShareStatus = async () => {
+    try {
+      const res = await axios.get(`${BACKEND_URL}/api/v1/brain/share`, { headers: { authorization: localStorage.getItem('token') } });
+      setIsShared(!!res.data.shared);
+      setShareHash(res.data.hash || null);
+    } catch (err) {
+      console.error('Failed to fetch share status', err);
+    }
+  };
+  fetchShareStatus();
+}, []);
   return (
     <div className='min-h-screen w-full bg-gradient-to-br from-indigo-100 via-white to-purple-100 flex flex-col md:flex-row relative'>
       {/* Mobile sidebar toggle button */}
@@ -66,27 +80,57 @@ const { contents, refetch } = useContent();
         />
 
         <div className="flex items-center gap-2 bg-white/70 border border-gray-200 rounded-md p-1">
-          <Button onClick={async () => {
-            try {
-              const response = await axios.post(`${BACKEND_URL}/api/v1/brain/share`, { "share": "true" }, { headers: { "authorization": localStorage.getItem("token") } });
-              const shareUrl = `${window.location.origin}/share/${response.data.hash}`;
-              await navigator.clipboard.writeText(shareUrl);
-              toast.show(`Share link copied to clipboard!`);
-            } catch (error) {
-              console.error('Failed to generate share link:', error);
-              toast.show('Failed to generate share link. Please try again.');
-            }
-          }} startIcon={<ShareIcon size={"md"}></ShareIcon>} variant='secondary' text="Share brain" />
+          <Button
+            onClick={async () => {
+              if (!isShared) {
+                // enable sharing
+                try {
+                  const response = await axios.post(`${BACKEND_URL}/api/v1/brain/share`, { share: "true" }, { headers: { authorization: localStorage.getItem('token') } });
+                  const hash = response.data.hash;
+                  const shareUrl = `${window.location.origin}/share/${hash}`;
+                  await navigator.clipboard.writeText(shareUrl);
+                  setIsShared(true);
+                  setShareHash(hash);
+                  toast.show('Public — share link copied');
+                } catch (err) {
+                  console.error('Enable sharing failed', err);
+                  toast.show('Failed to enable sharing');
+                }
+              } else {
+                // disable sharing
+                try {
+                  await axios.post(`${BACKEND_URL}/api/v1/brain/share`, { share: false }, { headers: { authorization: localStorage.getItem('token') } });
+                  setIsShared(false);
+                  setShareHash(null);
+                  toast.show('Private — sharing disabled');
+                } catch (err) {
+                  console.error('Disable sharing failed', err);
+                  toast.show('Failed to disable sharing');
+                }
+              }
+            }}
+            variant='secondary'
+            text={isShared ? 'Public' : 'Private'}
+            className={`${isShared ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'} px-4 py-2`}
+          />
 
-          <Button onClick={async () => {
-            try {
-              await axios.post(`${BACKEND_URL}/api/v1/brain/share`, { share: false }, { headers: { authorization: localStorage.getItem('token') } });
-              toast.show('Sharing disabled');
-            } catch (err) {
-              console.error('Failed to stop sharing', err);
-              toast.show('Failed to stop sharing');
-            }
-          }} startIcon={<ShareIcon size={"md"}></ShareIcon>} variant='secondary' text="Stop" className="bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50 px-3 py-1" />
+          {isShared && shareHash ? (
+            <button
+              onClick={async () => {
+                try {
+                  const shareUrl = `${window.location.origin}/share/${shareHash}`;
+                  await navigator.clipboard.writeText(shareUrl);
+                  toast.show('Share link copied to clipboard');
+                } catch (err) {
+                  console.error('Copy failed', err);
+                  toast.show('Failed to copy link');
+                }
+              }}
+              className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded text-sm"
+            >
+              Copy link
+            </button>
+          ) : null}
         </div>
       </div>
     
