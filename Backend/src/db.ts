@@ -9,6 +9,10 @@ const ContentSchema = new Schema({
     type:{type:String,required:true},
     title:{type:String,required:true},
     tags:[{type:Types.ObjectId, ref:'Tag'}],
+    // Optional OpenGraph/preview fields for 'other' links
+    ogTitle: { type: String },
+    ogDescription: { type: String },
+    ogImage: { type: String },
     userId:{type:Types.ObjectId,ref:'User',required:true}
 });
 export const ContentModel=model("Content",ContentSchema);

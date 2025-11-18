@@ -1,3 +1,4 @@
+import { LinkIcon } from "../icons/LinkIcon";
 import { LinkVaultIcon } from "../icons/LinkVaultIcon";
 import { TwitterIcon } from "../icons/TwitterIcon";
 import { YoutubeIcon } from "../icons/YoutubeIcon";
@@ -13,6 +14,7 @@ export function Sidebar({ onFilter }: { onFilter?: (type: string) => void }) {
         <div className="pt-5 font-medium">
             <SidebarItems text="Twitter" icon={<TwitterIcon />} onClick={() => onFilter?.("twitter")} />
             <SidebarItems text="Youtube" icon={<YoutubeIcon />} onClick={() => onFilter?.("youtube")} />
+            <SidebarItems text="Other" icon={<LinkIcon />} onClick={() => onFilter?.("other")} />
         </div>
     </div>
 }

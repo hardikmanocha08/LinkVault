@@ -43,24 +43,52 @@ app.post('/api/v1/signin', async (req, res) => {
     res.json({ token });
 });
 app.post('/api/v1/content',userMiddleware,async (req,res)=>{
-    const {link,type,title,tags} =req.body;
-     try{await ContentModel.create({
-        link:link,
-        type:type,
-        title:title,
-        tags:tags,
-        //@ts-ignore
-        userId:req.id
-        
-    })
-    res.json({
-        msg:"Content added"
-    })        
-}
-    catch(e){
-        res.status(411).json({
-            msg:"Incorrect Content Format"
-        })
+    const {link,type,title,tags} = req.body;
+    try {
+        // If type is 'other', attempt to fetch OpenGraph metadata
+        let ogTitle: string | undefined = undefined;
+        let ogDescription: string | undefined = undefined;
+        let ogImage: string | undefined = undefined;
+        if (type === 'other') {
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 5000);
+                const resp = await fetch(link, { signal: controller.signal, headers: { 'User-Agent': 'LinkVault/1.0 (+https://example.com)' } });
+                clearTimeout(timeout);
+                if (resp.ok) {
+                    const html = await resp.text();
+                    const ogTitleMatch = html.match(/<meta[^>]+property=["']og:title["'][^>]*content=["']([^"']+)["']/i) || html.match(/<meta[^>]+name=["']twitter:title["'][^>]*content=["']([^"']+)["']/i);
+                    const ogDescMatch = html.match(/<meta[^>]+property=["']og:description["'][^>]*content=["']([^"']+)["']/i) || html.match(/<meta[^>]+name=["']description["'][^>]*content=["']([^"']+)["']/i) || html.match(/<meta[^>]+name=["']twitter:description["'][^>]*content=["']([^"']+)["']/i);
+                    const ogImageMatch = html.match(/<meta[^>]+property=["']og:image["'][^>]*content=["']([^"']+)["']/i) || html.match(/<meta[^>]+name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i);
+                    ogTitle = ogTitleMatch ? ogTitleMatch[1] : undefined;
+                    ogDescription = ogDescMatch ? ogDescMatch[1] : undefined;
+                    ogImage = ogImageMatch ? ogImageMatch[1] : undefined;
+                    // fallback to <title>
+                    if (!ogTitle) {
+                        const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
+                        if (titleMatch) ogTitle = titleMatch[1];
+                    }
+                }
+            } catch (err) {
+                // ignore OG fetch errors — still create content without metadata
+                console.error('OG fetch failed', err);
+            }
+        }
+
+        await ContentModel.create({
+            link: link,
+            type: type,
+            title: title,
+            tags: tags,
+            //@ts-ignore
+            userId: req.id,
+            ogTitle,
+            ogDescription,
+            ogImage
+        });
+        res.json({ msg: "Content added" });
+    } catch (e) {
+        res.status(411).json({ msg: "Incorrect Content Format" });
     }
 })
 // Get current user's share status (whether a public link exists)

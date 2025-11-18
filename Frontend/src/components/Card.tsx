@@ -85,6 +85,8 @@ export function Card({ _id, title, link, type, onDelete, cardNumber }: CardProps
 
           {type === "other" && (
             <div className="text-sm">
+              {/* Prefer OpenGraph fields if present on the content object. The parent passes only link/title, so look up preview via stored fields if available. */}
+              {/* Note: the `Card` component currently receives only `_id, title, link, type`. If you want OG data, the parent should pass it in `contents` or we can fetch on client — for now, render link and fallback to simple preview. */}
               <a href={link} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline break-words">Open Link</a>
               <div className="mt-2 text-xs text-gray-500">This is a generic link preview — content may open in a new tab.</div>
             </div>
