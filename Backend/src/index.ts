@@ -90,9 +90,11 @@ app.delete('/api/v1/content',userMiddleware,async (req,res)=>{
     }
 }) 
 app.post('/api/v1/brain/share',userMiddleware,async(req,res)=>{
-    const share=req.body.share;
+    const share = req.body.share;
+    // Accept both boolean true and string "true"
+    const isEnable = share === true || share === "true";
     // Debug log
-    if(share=="true"){
+    if(isEnable){
         const existingLink=await LinkModel.findOne({
             //@ts-ignore
             userId:req.id

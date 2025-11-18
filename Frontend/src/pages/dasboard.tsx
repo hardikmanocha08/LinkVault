@@ -57,52 +57,37 @@ const { contents, refetch } = useContent();
       <CreateContentModal open={modalOpen} onClose={() => {
         setModalOpen(false);
       }} onContentAdded={refetch}/>
-      <div className='flex justify-end gap-3'>
-        <Button 
-    startIcon={<PlusIcon size={"lg"}></PlusIcon>}
-    variant='primary'
-    text="Add Content"
-    onClick={()=>{
-      setModalOpen(true)
-    }}/>
-      <Button onClick={async()=>{
-      try {
-        const response=await axios.post(`${BACKEND_URL}/api/v1/brain/share`,
-          {
-            "share":true
-          },{
-            headers:{
-              "authorization":localStorage.getItem("token")
+      <div className='flex justify-end gap-3 items-center'>
+        <Button
+          startIcon={<PlusIcon size={"lg"}></PlusIcon>}
+          variant='primary'
+          text="Add Content"
+          onClick={() => { setModalOpen(true); }}
+        />
+
+        <div className="flex items-center gap-2 bg-white/70 border border-gray-200 rounded-md p-1">
+          <Button onClick={async () => {
+            try {
+              const response = await axios.post(`${BACKEND_URL}/api/v1/brain/share`, { "share": "true" }, { headers: { "authorization": localStorage.getItem("token") } });
+              const shareUrl = `${window.location.origin}/share/${response.data.hash}`;
+              await navigator.clipboard.writeText(shareUrl);
+              toast.show(`Share link copied to clipboard!`);
+            } catch (error) {
+              console.error('Failed to generate share link:', error);
+              toast.show('Failed to generate share link. Please try again.');
             }
-          }
-        );
-        console.log('Share response:', response.data); // Debug log
-        const shareUrl = `${window.location.origin}/share/${response.data.hash}`
-        
-        // Copy to clipboard
-        await navigator.clipboard.writeText(shareUrl);
-          // Show success toast
-          toast.show(`Share link copied to clipboard!`);
-      } catch (error) {
-        console.error('Failed to generate share link:', error);
-          toast.show('Failed to generate share link. Please try again.');
-      }
-    }}
-    startIcon={<ShareIcon size={"md"}></ShareIcon>}
-    variant='secondary'
-    text="Share brain"/>
-      <Button onClick={async()=>{
-        try {
-          await axios.post(`${BACKEND_URL}/api/v1/brain/share`, { share: false }, { headers: { authorization: localStorage.getItem('token') } });
-          toast.show('Sharing disabled');
-        } catch (err) {
-          console.error('Failed to stop sharing', err);
-          toast.show('Failed to stop sharing');
-        }
-      }}
-      startIcon={<ShareIcon size={"md"}></ShareIcon>}
-      variant='secondary'
-      text="Stop sharing"/>
+          }} startIcon={<ShareIcon size={"md"}></ShareIcon>} variant='secondary' text="Share brain" />
+
+          <Button onClick={async () => {
+            try {
+              await axios.post(`${BACKEND_URL}/api/v1/brain/share`, { share: false }, { headers: { authorization: localStorage.getItem('token') } });
+              toast.show('Sharing disabled');
+            } catch (err) {
+              console.error('Failed to stop sharing', err);
+              toast.show('Failed to stop sharing');
+            }
+          }} startIcon={<ShareIcon size={"md"}></ShareIcon>} variant='secondary' text="Stop" className="bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50 px-3 py-1" />
+        </div>
       </div>
     
   <div className='flex gap-4 flex-wrap justify-center'>
