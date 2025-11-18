@@ -93,7 +93,7 @@ const { contents, refetch } = useContent();
     text="Share brain"/>
       <Button onClick={async()=>{
         try {
-          const response = await axios.post(`${BACKEND_URL}/api/v1/brain/share`, { share: false }, { headers: { authorization: localStorage.getItem('token') } });
+          await axios.post(`${BACKEND_URL}/api/v1/brain/share`, { share: false }, { headers: { authorization: localStorage.getItem('token') } });
           toast.show('Sharing disabled');
         } catch (err) {
           console.error('Failed to stop sharing', err);
@@ -101,7 +101,7 @@ const { contents, refetch } = useContent();
         }
       }}
       startIcon={<ShareIcon size={"md"}></ShareIcon>}
-      variant='ghost'
+      variant='secondary'
       text="Stop sharing"/>
       </div>
     
