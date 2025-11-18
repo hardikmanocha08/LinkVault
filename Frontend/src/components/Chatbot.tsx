@@ -9,24 +9,29 @@ interface Card {
   description?: string;
 }
 
-export function Chatbot({ contents }: { contents: any[] }) {
+export function Chatbot({ contents }: { contents: Card[] }) {
   const [messages, setMessages] = useState<{ sender: string; text: string }[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [minimized, setMinimized] = useState(true);
   const chatbotRef = useRef<HTMLDivElement>(null);
-  
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-  function handleClickOutside(event: MouseEvent) {
-  if (chatbotRef.current && !chatbotRef.current.contains(event.target as Node)) {
-  setMinimized(true);
-  }
-  }
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => {
-  document.removeEventListener("mousedown", handleClickOutside);
-  };
+    function handleClickOutside(event: MouseEvent) {
+      if (chatbotRef.current && !chatbotRef.current.contains(event.target as Node)) {
+        setMinimized(true);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
   async function fetchYouTubeDescription(link: string): Promise<string> {
     // Extract video ID from link
     const match = link.match(/[?&]v=([^&#]+)/);
@@ -123,16 +128,17 @@ export function Chatbot({ contents }: { contents: any[] }) {
     }
   }
   async function handleSend() {
-  if (!input.trim()) return;
-  setMessages([...messages, { sender: "user", text: input }]);
-  let response = "";
-  if (!apiKey) {
-  response = "Please enter your Gemini API key.";
-  } else {
-  response = await getGeminiResponse(input);
-  }
-  setMessages(msgs => [...msgs, { sender: "bot", text: response }]);
-  setInput("");
+    if (!input.trim()) return;
+    setMessages(msgs => [...msgs, { sender: "user", text: input }]);
+    setInput(""); // Clear input immediately
+
+    let response = "";
+    if (!apiKey) {
+      response = "Please provide your Gemini API key in the .env file (VITE_GEMINI_API_KEY).";
+    } else {
+      response = await getGeminiResponse(input);
+    }
+    setMessages(msgs => [...msgs, { sender: "bot", text: response }]);
   }
   return minimized ? (
     <div className="fixed bottom-4 right-4 w-12 h-12 sm:w-16 sm:h-16 bg-indigo-500 rounded-full shadow-lg flex items-center justify-center cursor-pointer z-50" onClick={() => setMinimized(false)}>
@@ -141,14 +147,24 @@ export function Chatbot({ contents }: { contents: any[] }) {
   ) : (
     <div ref={chatbotRef} className="fixed bottom-4 right-4 w-64 sm:w-96 bg-white/90 rounded-xl shadow-lg border p-2 sm:p-4 z-50">
       <div className="font-bold mb-2 text-sm sm:text-base">Chatbot (Powered by Gemini API)</div>
-      <div className="mb-2"></div>
+      {!apiKey && (
+        <div className="text-red-500 text-xs sm:text-sm mb-2 p-1 bg-red-100 rounded">
+          API Key missing! Please set VITE_GEMINI_API_KEY in your .env file.
+        </div>
+      )}
       <div className="h-32 sm:h-48 overflow-y-auto mb-2 bg-gray-50 rounded p-2">
         {messages.map((msg, i) => (
           <div key={i} className={msg.sender === "user" ? "text-right" : "text-left text-indigo-700"}>
             <span className="block mb-1 text-xs sm:text-sm"><b>{msg.sender === "user" ? "You" : "Bot"}:</b> {msg.text}</span>
           </div>
         ))}
-        {loading && <div className="text-center text-gray-400">Thinking...</div>}
+        {loading && (
+          <div className="flex justify-center items-center py-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-500"></div>
+            <span className="ml-2 text-xs sm:text-sm text-gray-400">Thinking...</span>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
       </div>
       <div className="flex gap-2">
         <input
@@ -157,11 +173,10 @@ export function Chatbot({ contents }: { contents: any[] }) {
           onChange={e => setInput(e.target.value)}
           placeholder="Ask about your interest, card details, or recommendations..."
           onKeyDown={e => { if (e.key === "Enter") handleSend(); }}
+          disabled={loading || !apiKey}
         />
-        <button className="bg-indigo-500 text-white px-2 sm:px-3 py-1 rounded text-xs sm:text-sm" onClick={handleSend} disabled={loading}>Send</button>
+        <button className="bg-indigo-500 text-white px-2 sm:px-3 py-1 rounded text-xs sm:text-sm" onClick={handleSend} disabled={loading || !apiKey}>Send</button>
       </div>
     </div>
   );
 }
-
-
