@@ -36,15 +36,22 @@ export function Chatbot({ contents }: { contents: Card[] }) {
     // Extract video ID from link
     const match = link.match(/[?&]v=([^&#]+)/);
     const videoId = match ? match[1] : null;
-    if (!videoId) return "";
+    if (!videoId) {
+      console.error("YouTube: Could not extract video ID from link:", link);
+      return "";
+    }
     try {
       // Use noembed for more info
       const res = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`);
-      if (!res.ok) return "";
+      if (!res.ok) {
+        console.error(`YouTube: noembed.com returned ${res.status} for video ID: ${videoId}`);
+        return "";
+      }
       const data = await res.json();
       // Prefer description, fallback to title
       return data.description ? data.description : (data.title ? `Title: ${data.title}` : "");
-    } catch {
+    } catch (error) {
+      console.error("YouTube: Error fetching description for video ID:", videoId, error);
       return "";
     }
   }
@@ -53,34 +60,51 @@ export function Chatbot({ contents }: { contents: Card[] }) {
     // Try to extract tweet ID from link
     const match = link.match(/twitter.com\/(?:#!\/)?\w+\/status\/(\d+)/);
     const tweetId = match ? match[1] : null;
-    if (!tweetId) return "";
+    if (!tweetId) {
+      console.error("Twitter: Could not extract tweet ID from link:", link);
+      return "";
+    }
     try {
       // Use Twitter oEmbed for public tweets
       const res = await fetch(`https://publish.twitter.com/oembed?url=https://twitter.com/user/status/${tweetId}`);
-      if (!res.ok) return "";
+      if (!res.ok) {
+        console.error(`Twitter: oEmbed returned ${res.status} for tweet ID: ${tweetId}`);
+        return "";
+      }
       const data = await res.json();
       // Extract text from HTML robustly
       const html = data.html || "";
       // Remove all HTML tags
       const text = html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
       return text || "";
-    } catch {
+    } catch (error) {
+      console.error("Twitter: Error fetching tweet text for tweet ID:", tweetId, error);
       return "";
     }
   }
 
   async function enrichCards(cards: Card[]): Promise<Card[]> {
-    // For each card, fetch description if missing
     return Promise.all(cards.map(async card => {
-      if (card.type === "youtube" && !card.description) {
-        const desc = await fetchYouTubeDescription(card.link);
-        return { ...card, description: desc };
+      let currentCard = { ...card };
+
+      if (currentCard.type === "youtube" && !currentCard.description) {
+        const desc = await fetchYouTubeDescription(currentCard.link);
+        if (desc) { // Only update if a description was actually fetched
+          currentCard = { ...currentCard, description: desc };
+        }
+      } else if (currentCard.type === "twitter" && !currentCard.description) {
+        const desc = await fetchTweetText(currentCard.link);
+        if (desc) { // Only update if a description was actually fetched
+          currentCard = { ...currentCard, description: desc };
+        }
       }
-      if (card.type === "twitter" && !card.description) {
-        const desc = await fetchTweetText(card.link);
-        return { ...card, description: desc };
+
+      // Fallback: if description is still missing, use the title
+      if (!currentCard.description && currentCard.title) {
+        currentCard = { ...currentCard, description: `Title: ${currentCard.title}` };
       }
-      return card;
+      
+      return currentCard;
     }));
   }
 
