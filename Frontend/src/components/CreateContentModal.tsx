@@ -7,7 +7,8 @@ import axios from "axios";
 import { BACKEND_URL } from "../config";
 const ContentType = {
     Youtube: "youtube",
-    Twitter: "twitter"
+    Twitter: "twitter",
+    Other: "other"
 } as const;
 
 type ContentTypeValue = typeof ContentType[keyof typeof ContentType];
@@ -54,6 +55,9 @@ export function CreateContentModal({open,onClose,onContentAdded}){
                                 }}></Button>
                                 <Button text="Twitter" variant={type ===ContentType.Twitter ? "primary":"secondary"} onClick={()=>{
                                     setType(ContentType.Twitter)
+                                }}></Button>
+                                <Button text="Other" variant={type ===ContentType.Other ? "primary":"secondary"} onClick={()=>{
+                                    setType(ContentType.Other)
                                 }}></Button>
                             </div>
                         </div>

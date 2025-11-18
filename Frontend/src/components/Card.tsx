@@ -5,7 +5,7 @@ interface CardProps {
   readonly _id: string; // added so we can delete by ID
   readonly title: string;
   readonly link: string;
-  readonly type: "twitter" | "youtube";
+  readonly type: "twitter" | "youtube" | "other";
   readonly onDelete?: () => void; // callback to refetch or update UI
   readonly cardNumber?: number; // card number
 }
@@ -81,6 +81,13 @@ export function Card({ _id, title, link, type, onDelete, cardNumber }: CardProps
             <blockquote className="twitter-tweet">
               <a href={link.replace("x.com", "twitter.com")} aria-label="View tweet link">View Tweet</a>
             </blockquote>
+          )}
+
+          {type === "other" && (
+            <div className="text-sm">
+              <a href={link} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline break-words">Open Link</a>
+              <div className="mt-2 text-xs text-gray-500">This is a generic link preview — content may open in a new tab.</div>
+            </div>
           )}
         </div>
       </div>
