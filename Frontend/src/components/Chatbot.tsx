@@ -83,7 +83,17 @@ export function Chatbot({ contents }: { contents: any[] }) {
     setLoading(true);
     try {
       const enriched = await enrichCards(contents);
-      const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent", {
+        // Build a clean, human-readable numbered list for the model to reference.
+        const cardsText = (enriched || []).map((c, idx) => {
+          const num = idx + 1;
+          const id = (c as Card)._id ?? "N/A";
+          const title = (c as Card).title ?? "(no title)";
+          const desc = (c as Card).description ? ((c as Card).description as string).replace(/\s+/g, " ").trim() : "(no description)";
+          const link = (c as Card).link ?? "(no link)";
+          return `${num}. CardNumber: ${num} | ID: ${id} | Title: ${title} | Description: ${desc} | Link: ${link}`;
+        }).join("\n");
+
+        const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -94,7 +104,7 @@ export function Chatbot({ contents }: { contents: any[] }) {
             {
               parts: [
                 {
-                  text: `System: You are LinkVault's assistant. Do not disclose any database content, user IDs, or sensitive information. Always reply formally, only to the question asked, and do not provide extra details. Here are my cards (with title, type, link, and description): ${JSON.stringify(enriched)}.\nUser: ${question}`
+                    text: `System: You are LinkVault's assistant. Do not disclose any private credentials or backend-only tokens. When answering, use ONLY the card data provided below. Provide concise, factual answers referencing card numbers when appropriate. For each card include: CardNumber, Title, Description, and the Link. If the user asks about a specific card, refer to it by its CardNumber. Do NOT invent additional cards or data.\n\nMy cards:\n${cardsText}\n\nUser: ${question}`
                 }
               ]
             }
