@@ -6,6 +6,7 @@ import { Card } from '../components/Card'
 import { Chatbot } from '../components/Chatbot'
 import { CreateContentModal } from '../components/CreateContentModal'
 import { Sidebar } from '../components/Sidebar'
+import { useToast } from '../components/Toast'
 import { BACKEND_URL } from '../config'
 import { useContent } from '../hoooks/useContent'
 import { PlusIcon } from '../icons/plusIcon'
@@ -14,6 +15,8 @@ import { ShareIcon } from '../icons/shareIcon'
 
 function Dashboard() {
 const [sidebarOpen, setSidebarOpen] = useState(false);
+
+const toast = useToast();
 
 const [modalOpen, setModalOpen] = useState(false);
 const [filterType, setFilterType] = useState<string | null>(null);
@@ -62,7 +65,7 @@ const { contents, refetch } = useContent();
     onClick={()=>{
       setModalOpen(true)
     }}/>
-    <Button onClick={async()=>{
+      <Button onClick={async()=>{
       try {
         const response=await axios.post(`${BACKEND_URL}/api/v1/brain/share`,
           {
@@ -78,17 +81,28 @@ const { contents, refetch } = useContent();
         
         // Copy to clipboard
         await navigator.clipboard.writeText(shareUrl);
-        
-        // Show success message (you can replace this with a toast notification later)
-        alert(`Share link copied to clipboard!\n${shareUrl}`);
+          // Show success toast
+          toast.show(`Share link copied to clipboard!`);
       } catch (error) {
         console.error('Failed to generate share link:', error);
-        alert('Failed to generate share link. Please try again.');
+          toast.show('Failed to generate share link. Please try again.');
       }
     }}
     startIcon={<ShareIcon size={"md"}></ShareIcon>}
     variant='secondary'
     text="Share brain"/>
+      <Button onClick={async()=>{
+        try {
+          const response = await axios.post(`${BACKEND_URL}/api/v1/brain/share`, { share: false }, { headers: { authorization: localStorage.getItem('token') } });
+          toast.show('Sharing disabled');
+        } catch (err) {
+          console.error('Failed to stop sharing', err);
+          toast.show('Failed to stop sharing');
+        }
+      }}
+      startIcon={<ShareIcon size={"md"}></ShareIcon>}
+      variant='ghost'
+      text="Stop sharing"/>
       </div>
     
   <div className='flex gap-4 flex-wrap justify-center'>

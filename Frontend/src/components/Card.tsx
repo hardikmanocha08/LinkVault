@@ -57,9 +57,11 @@ export function Card({ _id, title, link, type, onDelete, cardNumber }: CardProps
             {title}
           </div>
           <div className="flex items-center">
-            <div className="pr-2 text-gray-500 hover:text-red-500 cursor-pointer transition-colors">
-              <button className="cursor-pointer" onClick={handleDelete}><DeleteIcon/></button>
-            </div>
+            {onDelete ? (
+              <div className="pr-2 text-gray-500 hover:text-red-500 cursor-pointer transition-colors">
+                <button className="cursor-pointer" onClick={handleDelete}><DeleteIcon/></button>
+              </div>
+            ) : null}
           </div>
         </div>
 

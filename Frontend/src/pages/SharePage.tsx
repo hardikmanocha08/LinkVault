@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card } from '../components/Card';
+import { useToast } from '../components/Toast';
 import { BACKEND_URL } from '../config';
 
 interface ShareData {
@@ -33,6 +34,8 @@ export function SharePage() {
     }
   }, [shareLink]);
 
+  const toast = useToast();
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -59,6 +62,29 @@ export function SharePage() {
           <p className="text-gray-600 text-sm sm:text-base">
             Shared content from {shareData.username}
           </p>
+          <div className="mt-4">
+            <div className="flex items-center justify-between bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 px-3 py-2 rounded">
+              <div className="text-sm">
+                <strong>Public view — read only:</strong> Anyone with this link can view the cards but cannot add, edit, or delete them.
+              </div>
+              <div>
+                <button
+                  className="bg-yellow-400 hover:bg-yellow-500 text-white text-xs px-2 py-1 rounded"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(window.location.href);
+                      toast.show('Share link copied to clipboard!');
+                    } catch (err) {
+                      console.error('Copy failed', err);
+                      toast.show(window.location.href);
+                    }
+                  }}
+                >
+                  Copy Link
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
         <div className="flex gap-3 sm:gap-4 flex-wrap justify-center">
           {shareData.content && shareData.content.length > 0 ? (
